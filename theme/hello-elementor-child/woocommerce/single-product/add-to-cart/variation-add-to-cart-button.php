@@ -1,0 +1,730 @@
+<?php
+/**
+ * Single variation cart button
+ *
+ * @see https://woocommerce.com/document/template-structure/
+ * @package WooCommerce\Templates
+ * @version 10.2.0
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+global $product;
+$bloquer_remise_commerciale = get_field('bloquer_remise_commerciale', $product->get_id());
+$current_remises="";
+$user_id = get_current_user_id();
+$product_url = get_permalink($product->get_id());
+$login_url = add_query_arg('redirect_to', urlencode($product_url), wc_get_page_permalink('myaccount'));
+
+
+$desactiver1 = null;
+$remise_r = null;
+$remise_a = null;
+$remise_e = null;
+$remise_c = null;
+
+$is_revendeur = false;
+$desactiver1 = false;
+$desactiver2 = false;
+$desactiver3 = false;
+$desactiver4 = false;
+$user_has_disabled_remises = false;
+$user_has_enabled_remises = false;
+
+
+if($user_id>0){
+    $user_has_disabled_remises = has_user_disabled_remises($user_id);
+	$user_has_enabled_remises = has_user_enabled_remises($user_id);
+
+	$remise_c = get_user_remise_by_type($user_id,"Changement -25%");
+	$remise_r = get_user_remise_by_type($user_id,"Renouvellement de licences -30%");
+	$remise_a = get_user_remise_by_type($user_id,"Administrations et mairies -30%");
+	$remise_e = get_user_remise_by_type($user_id,"Établissements scolaires et associations -50%");
+	
+	$current_remises .= ($remise_c)?get_field('type', $remise_c):"";
+	$current_remises .= ($remise_r)?get_field('type', $remise_r):"";
+	$current_remises .= ($remise_a)?get_field('type', $remise_a):"";
+	$current_remises .= ($remise_e)?get_field('type', $remise_e):"";
+
+
+   $desactiver1 = $user_has_disabled_remises || $remise_r || $remise_a || $remise_e;
+    $desactiver2 = $user_has_disabled_remises || $remise_c;
+    $desactiver3 = $user_has_disabled_remises || $remise_c || $remise_e;
+    $desactiver4 = $user_has_disabled_remises || $remise_a || $remise_c;
+
+	$user = wp_get_current_user();
+	$is_revendeur = in_array('customer_revendeur', (array) $user->roles);
+	
+}
+
+?>
+<div style="display: flex; flex-direction: column;gap:7px;align-items: center;" class="woocommerce-variation-add-to-cart variations_button">
+	<?php do_action( 'woocommerce_before_add_to_cart_button' ); ?>
+
+	<?php
+	do_action( 'woocommerce_before_add_to_cart_quantity' );
+
+	woocommerce_quantity_input(
+		array(
+			'min_value'   => $product->get_min_purchase_quantity(),
+			'max_value'   => $product->get_max_purchase_quantity(),
+			'input_value' => isset( $_POST['quantity'] ) ? wc_stock_amount( wp_unslash( $_POST['quantity'] ) ) : $product->get_min_purchase_quantity(), // WPCS: CSRF ok, input var ok.
+		)
+	);
+
+	do_action( 'woocommerce_after_add_to_cart_quantity' );
+	?>
+
+	<button style="margin-block:20px!important;" type="submit" class="single_add_to_cart_button button alt<?php echo esc_attr( wc_wp_theme_get_element_class_name( 'button' ) ? ' ' . wc_wp_theme_get_element_class_name( 'button' ) : '' ); ?>"><?php echo esc_html( $product->single_add_to_cart_text() ); ?></button>
+
+	<?php do_action( 'woocommerce_after_add_to_cart_button' ); ?>
+
+	<input type="hidden" name="add-to-cart" value="<?php echo absint( $product->get_id() ); ?>" />
+	<input type="hidden" name="product_id" value="<?php echo absint( $product->get_id() ); ?>" />
+	<input type="hidden" name="variation_id" class="variation_id" value="0" />
+	
+</div>
+
+<?php 
+    
+    if(!$bloquer_remise_commerciale){
+?>
+    <div class="div-remise">
+        <form id="demandeRemise" method="post" enctype="multipart/form-data">
+            <span style="font-family: 'Raleway';font-weight: 600;text-align:center;"> JE PEUX BÉNÉFICIER<br> D'UNE REMISE COMMERCIALE :</span>
+            <!-- Option 1 -->
+            <label>
+                <input type="checkbox" <?php if ($remise_c){ echo 'checked disabled'; }else if($desactiver1){echo 'disabled'; } ?>  name="option_remise[]"  id="option1" class="optionRemise" data-group="1" data-file="file1" data-value="Changement -25%"> Je change d'antivirus pour Avast -25%
+            </label>
+            <div class="upload hidden" id="file1">
+                <input type="file" name="justificatif_changement" accept="application/pdf,image/*">
+            </div>
+
+            <!-- Option 2 -->
+            <label>
+                <input type="checkbox" <?php if ($remise_r){ echo 'checked disabled'; }else if($desactiver2 ){echo 'disabled'; } ?>  name="option_remise[]"  id="option2" class="optionRemise" data-group="2" data-file="file2" data-value="Renouvellement de licences -30%"> Renouvellement de licences -30%
+            </label>
+            
+            <div class="upload hidden" id="file2" style="display: flex;gap: 7px; align-items: center;justify-content: center;">
+                <input  style="width: 50%;padding: 0.5rem 0.4rem; height: 30px;" type="text" id="old_key" name="justificatif_text_renouvellement" placeholder="Ancienne licence"> ou
+                <input style="width: 50%;" type="file" name="justificatif_file_renouvellement" accept="application/pdf,image/*">
+            </div>
+
+            <!-- Option 3 -->
+            <label>
+                <input type="checkbox" <?php if ($remise_a){ echo 'checked disabled'; }else if($desactiver3){echo 'disabled'; } ?> name="option_remise[]"  id="option3" class="optionRemise" data-group="3" data-file="file3" data-value="Administrations et mairies -30%"> Administrations et mairies -30%
+            </label>
+            <div class="upload hidden" id="file3">
+                <input type="file" name="justificatif_admin" accept="application/pdf,image/*">
+            </div>
+
+            <!-- Option 4 -->
+            <label>
+                <input type="checkbox" <?php if ($remise_e){ echo 'checked disabled'; }else if($desactiver4){echo 'disabled'; } ?>  name="option_remise[]"  id="option4" class="optionRemise" data-group="4" data-file="file4" data-value="Établissements scolaires et associations -50%"> Établissements scolaires et associations -50%
+            </label>
+            <div class="upload hidden" id="file4">
+                <input type="file" name="justificatif_association" accept="application/pdf,image/*">
+            </div>
+
+            <input type="hidden" name="remise_type" id="remise_type" value="<?php echo $current_remises; ?>">
+
+			<?php if( !$is_revendeur){ //si il est revendeur ne rien afficher
+			?>
+				<?php if($user_has_enabled_remises  || !($user_has_enabled_remises || $user_has_disabled_remises)){ //si il a des remises activees ou si il n'a aucune remise
+				?>
+				<?php if($user_id>0){ //si il est connecte
+					?>
+						<button class="btn-remise btn-remise-style"  type="submit" name="submit_demande_remise">Appliquer ma remise</button>
+					<?php }else{?>
+						<a class="link-conn" >Connectez-vous</a>
+					<?php }
+					?>
+				<?php }
+				?>
+
+				<?php if($user_has_disabled_remises){ //si il a des remises desactivees lui permettre de les activer
+				?>
+					<button 
+						type="button"
+						class=" toggle-remise btn-remise-style"
+						data-action="activate">
+						Activer mes remises
+					</button>
+				<?php }
+				?>
+
+				<?php if($user_has_enabled_remises){ //si il a des remises activees lui permettre de les desactiver
+				?>
+					<button 
+						type="button"
+						class="toggle-remise btn-remise-style"
+						data-action="deactivate">
+						Désactiver mes remises
+					</button>
+				<?php }?>
+			<?php }?>
+
+        </form>
+        
+    </div>
+
+    
+    <div class="popup-overlay popup-connexion" style="display:none">
+        <div class="poppup">
+            <?php echo do_shortcode("[woocommerce_my_account]");?>
+        </div>
+    </div>
+
+<?php 
+    }
+?>
+<style>
+    .hidden { display:none !important; }
+    .block-option { margin-bottom: 12px; }
+    label { font-weight: 500; cursor:pointer; }
+    
+</style>
+
+
+
+<?php 
+    
+    if(!$bloquer_remise_commerciale){
+?>
+    <script>
+    jQuery(document).ready(function($) {
+
+        function load_form(){
+            const saved = localStorage.getItem('demandeRemiseAvantConnexion');
+
+            console.log("debut restauration")
+            if(!saved) return;
+
+            const data = JSON.parse(saved);
+            console.log("restauration a faire",data)
+
+            $.each(data, function(key,value){
+				console.log(key)
+				if (key === 'file_data') return;
+
+				if (key === 'remise_type'){
+					console.log("remise_type",value)
+					$('#remise_type').val(value);
+				}
+					
+
+                const el = $('#'+key);
+
+                if(el.length){
+					if (el.attr('type') === 'checkbox') {
+						el.prop('checked', value);
+
+						// Gérer l'affichage du fichier associé
+						const fileId = el.data('file');
+						if (fileId) {
+							console.log('#' + fileId);
+							
+							// N'AFFICHER QUE SI LA CHECKBOX EST COCHÉE
+							if (value) {
+								$('#' + fileId).removeClass('hidden').show();
+							} else {
+								$('#' + fileId).addClass('hidden').hide();
+							}
+						}
+					}
+                    
+
+                }else{
+
+                    const el2 = $('[name="'+key+'"]');
+
+                    if(el2.length){
+                        el2.val(value);
+                    }
+
+                }
+
+            });
+
+			// Restauration des fichiers si présents
+			if (data.files_data) {
+				restoreAllFiles(data.files_data);
+			}
+            // **vider la sauvegarde après restauration**
+            localStorage.removeItem('demandeRemiseAvantConnexion');
+            console.log("localStorage vidé après restauration");
+        }
+
+        function restoreAllFiles(filesData) {
+			// Pour chaque input file
+			$.each(filesData, function(inputName, files) {
+				let fileInput;
+				
+				if (inputName.startsWith('file_')) {
+					// Cas où on a généré un nom par défaut
+					const index = inputName.split('_')[1];
+					fileInput = $('input[type="file"]').eq(index);
+				} else {
+					// Cas où l'input a un attribut name
+					fileInput = $('input[type="file"][name="' + inputName + '"]');
+				}
+				
+				if (fileInput.length === 0) {
+					// Fallback: prendre le premier input file
+					fileInput = $('input[type="file"]').first();
+				}
+				
+				if (fileInput.length > 0) {
+					restoreFilesToInput(fileInput, files);
+					console.log(fileInput)
+					$(".btn-remise").prop("disabled", false);
+				}
+			});
+		}
+
+		function restoreFilesToInput(fileInput, files) {
+			const dataTransfer = new DataTransfer();
+			let filesRestored = 0;
+			
+			// Recréer chaque fichier et l'ajouter au DataTransfer
+			files.forEach(function(fileData) {
+				// Convertir Base64 en Blob
+				const byteString = atob(fileData.content.split(',')[1]);
+				const arrayBuffer = new ArrayBuffer(byteString.length);
+				const uint8Array = new Uint8Array(arrayBuffer);
+				
+				for (let i = 0; i < byteString.length; i++) {
+					uint8Array[i] = byteString.charCodeAt(i);
+				}
+				
+				const blob = new Blob([uint8Array], {type: fileData.type});
+				const restoredFile = new File([blob], fileData.name, {
+					type: fileData.type,
+					lastModified: fileData.lastModified
+				});
+				
+				dataTransfer.items.add(restoredFile);
+				filesRestored++;
+			});
+			
+			// Assigner les fichiers à l'input
+			fileInput[0].files = dataTransfer.files;
+			
+			// Déclencher l'événement change
+			fileInput.trigger('change');
+			
+			// Afficher le résumé des fichiers restaurés
+			console.log(`${filesRestored} fichier(s) restauré(s) pour l'input ${fileInput.attr('name') || 'sans nom'}`);
+		}
+
+        
+
+        function restoreAllFiles(filesData) {
+			// Pour chaque input file
+			$.each(filesData, function(inputName, files) {
+				let fileInput;
+				
+				if (inputName.startsWith('file_')) {
+					// Cas où on a généré un nom par défaut
+					const index = inputName.split('_')[1];
+					fileInput = $('input[type="file"]').eq(index);
+				} else {
+					// Cas où l'input a un attribut name
+					fileInput = $('input[type="file"][name="' + inputName + '"]');
+				}
+				
+				if (fileInput.length === 0) {
+					// Fallback: prendre le premier input file
+					fileInput = $('input[type="file"]').first();
+				}
+				
+				if (fileInput.length > 0) {
+					restoreFilesToInput(fileInput, files);
+					$(".btn-remise").prop("disabled", false);
+				}
+			});
+		}
+
+		function restoreFilesToInput(fileInput, files) {
+			const dataTransfer = new DataTransfer();
+			let filesRestored = 0;
+			
+			// Recréer chaque fichier et l'ajouter au DataTransfer
+			files.forEach(function(fileData) {
+				// Convertir Base64 en Blob
+				const byteString = atob(fileData.content.split(',')[1]);
+				const arrayBuffer = new ArrayBuffer(byteString.length);
+				const uint8Array = new Uint8Array(arrayBuffer);
+				
+				for (let i = 0; i < byteString.length; i++) {
+					uint8Array[i] = byteString.charCodeAt(i);
+				}
+				
+				const blob = new Blob([uint8Array], {type: fileData.type});
+				const restoredFile = new File([blob], fileData.name, {
+					type: fileData.type,
+					lastModified: fileData.lastModified
+				});
+				
+				dataTransfer.items.add(restoredFile);
+				filesRestored++;
+			});
+			
+			// Assigner les fichiers à l'input
+			fileInput[0].files = dataTransfer.files;
+			
+			// Déclencher l'événement change
+			fileInput.trigger('change');
+			
+			// Afficher le résumé des fichiers restaurés
+			console.log(`${filesRestored} fichier(s) restauré(s) pour l'input ${fileInput.attr('name') || 'sans nom'}`);
+		}
+
+        $('.link-conn').on('click', function(e){
+            e.preventDefault();
+            const divform = $('.div-remise');
+            console.log("form a stocker",divform.find('input'))
+            let data = {};
+			let fileData = null;
+
+			// Gestion des fichiers - prend TOUS les fichiers de TOUS les inputs
+			const fileInputs = divform.find('input[type="file"]');
+			let filesProcessed = 0;
+			let totalFiles = 0;
+
+			// Compter le nombre total de fichiers à traiter
+			fileInputs.each(function() {
+				totalFiles += this.files.length;
+			});
+
+			if (totalFiles > 0) {
+				data['files_data'] = {}; // Objet pour stocker tous les fichiers
+				
+				fileInputs.each(function(inputIndex) {
+					const fileInput = $(this);
+					const inputName = fileInput.attr('name') || 'file_' + inputIndex;
+					
+					// Pour chaque fichier dans cet input
+					for (let i = 0; i < this.files.length; i++) {
+						const file = this.files[i];
+						const reader = new FileReader();
+						const fileId = inputName + '_' + i;
+						
+						// Stocker les métadonnées
+						if (!data['files_data'][inputName]) {
+							data['files_data'][inputName] = [];
+						}
+						
+						reader.onload = (function(currentFile, currentInputName, currentIndex) {
+							return function(e) {
+								data['files_data'][currentInputName].push({
+									name: currentFile.name,
+									type: currentFile.type,
+									size: currentFile.size,
+									lastModified: currentFile.lastModified,
+									content: e.target.result, // Base64 data URL
+									index: currentIndex
+								});
+								
+								filesProcessed++;
+								
+								// Si tous les fichiers sont traités, sauvegarder
+								if (filesProcessed === totalFiles) {
+									localStorage.setItem('demandeRemiseAvantConnexion', JSON.stringify(data));
+									console.log("Tous les fichiers sauvegardés:", data['files_data']);
+								}
+							};
+						})(file, inputName, i);
+						
+						reader.readAsDataURL(file);
+					}
+				});
+			} else {
+				// Pas de fichiers, sauvegarder directement
+				localStorage.setItem('demandeRemiseAvantConnexion', JSON.stringify(data));
+			}
+
+            divform.find('input').each(function(){
+                const el = $(this);
+                console.log("stockage",el.attr('name'))
+
+                if(el.attr('type') === 'file') return;
+
+                if(el.attr('type') === 'checkbox'){
+                    data[el.attr('id')] = el.prop('checked');
+                }else{
+                    data[el.attr('name')] = el.val();
+                }
+            });
+
+            localStorage.setItem('demandeRemiseAvantConnexion', JSON.stringify(data));
+            
+            $('.popup-overlay').fadeIn();
+        });
+
+        $('.popup-overlay').on('click', function(e){
+            if($(e.target).is('.popup-overlay')){
+                $(this).fadeOut();
+            }
+        });
+
+        $('.toggle-remise').on('click', function(){
+
+			let actionType = $(this).data('action');
+
+			$.post('<?php echo admin_url('admin-ajax.php'); ?>', {
+				action: 'toggle_user_remises',
+				mode: actionType
+			}, function(response){
+
+				if(response.success){
+					location.reload(); // simple
+				} else {
+					alert('Erreur');
+				}
+
+			});
+
+		});
+
+		function normalizeRemises(values) {
+			const hasRenouvellement = values.some(v => v.toLowerCase().includes('renouvellement'));
+			const hasAdmin = values.some(v => v.toLowerCase().includes('administrations'));
+			const hasEcole = values.some(v => 
+				v.toLowerCase().includes('établissements') || v.toLowerCase().includes('associations')
+			);
+
+			// Cas 1 : renouvellement + administrations → 50%
+			if (hasRenouvellement && hasAdmin) {
+				return ['renouvellement administration -50%'];
+			}
+
+			// Cas 2 : renouvellement + écoles → 60%
+			if (hasRenouvellement && hasEcole) {
+				return ['renouvellement école -60%'];
+			}
+
+			// Sinon on ne change rien
+			return values;
+		}
+
+        function  apply_reduction(element){
+			 const $this = element ? $(element) : $('.optionRemise:checked').first();
+    		const group = $this.length ? parseInt($this.data('group')) : null;
+			
+			console.log("selected group:",group)
+
+            // logique de combinaison
+            if (group === 1) {
+                // Option 1 seule → décocher toutes les autres
+                $('.optionRemise').not($this).prop('checked', false);
+            } else if (group === 2) {
+                // Option 2 peut être combinée avec 3 ou 4 → décocher 1
+                $('.optionRemise').each(function() {
+                    if (parseInt($(this).data('group')) === 1) $(this).prop('checked', false);
+                });
+            } else if (group === 3) {
+                // décocher 1 et 4
+                $('.optionRemise').each(function() {
+                    const g = parseInt($(this).data('group'));
+                    if (g === 1 || g === 4) $(this).prop('checked', false);
+                });
+            } else if (group === 4) {
+                // décocher 1 et 3
+                $('.optionRemise').each(function() {
+                    const g = parseInt($(this).data('group'));
+                    if (g === 1 || g === 3) $(this).prop('checked', false);
+                });
+            }
+
+            // afficher tous les uploads correspondant aux cases cochées
+            $('.upload').addClass('hidden');
+            $('.optionRemise:checked').each(function() {
+                const fileId = $(this).data('file');
+                $('#' + fileId).removeClass('hidden');
+            });
+
+            // reconstruire hidden
+            let values = [];
+            $('.optionRemise:checked').each(function() {
+                values.push($(this).data('value'));
+            });
+            $('#remise_type').val(values.join(', '));
+			valuesToApply = normalizeRemises(values);
+            console.log("remises courantes",valuesToApply.length,valuesToApply.join(', '))
+            if(valuesToApply.length<1 || $(".single_add_to_cart_button").hasClass("disabled")){
+                console.log("pas de remise")
+                $(".btn-remise").prop("disabled", true);
+                $(".prix-remise").hide();
+                $(".remise_initiale").show();
+                $(".hide-if-rem-comm").show();
+                $(".remisable bdi").css("text-decoration", "none");
+                $(".hide-if-rem-comm  .variation-reduction-percentage").show();
+                $(".hide-if-rem-comm ins").show();
+                $(".hide-if-rem-comm  .promo-end").show();
+                $(".formule-rc").hide();
+            }else{
+                $(".btn-remise").prop("disabled", false);
+                $(".remise_initiale").hide();
+                
+
+                let prixFinal = 0
+
+                var hasRemise = $(".pourcentage-remise-depart").filter(function() {
+                    return $(this).text().trim() !== "";
+                }).length > 0;
+
+                // Vérifier si le prix total contient un texte
+                var hasPrix = $(".prix-total2").filter(function() {//prix de base du produit
+                    return $(this).text().trim() !== "";
+                }).length > 0;
+
+                console.log("Contient remise :", hasRemise);
+                console.log("Contient prix :", hasPrix);
+                let currency = $('.remisable .woocommerce-Price-currencySymbol').first().text();
+				let formule = ""
+
+                // Exemple de condition
+                if (hasRemise && hasPrix) {//reevendeur
+					let prixDepart = parseFloat($(".prix-total2").text().replace(',', '.'));
+					let pourcentageRemise = parseFloat($(".pourcentage-remise-depart").text().replace(',', '.'));
+					let prixRemiseRevendeur =  (prixDepart * pourcentageRemise / 100); //conserver prixDepart - prixRemiseRevendeur et cummulee a partir de la
+					// Appliquer la réduction
+					 let prixApresRR = prixDepart - prixRemiseRevendeur;
+                     let prixActuel = prixApresRR;
+					 console.log("prixDepart",prixDepart)
+					 console.log("pourcentageRemiseR",pourcentageRemise)
+					 console.log("prixRemiseRevendeur",prixRemiseRevendeur)
+					 console.log("prixApresRR",prixApresRR)
+                     formule += `<span class="price"><del aria-hidden="true">${prixApresRR.toFixed(2)} ${currency}</del></span>`
+                      valuesToApply.forEach((v, index, array) => {
+                        const match = v.match(/-([0-9]+)%/);
+                        if (match) {
+                            const pourcentage = parseInt(match[1], 10);
+                            const remise = prixActuel * pourcentage / 100;
+                            prixActuel = prixActuel - remise;
+                            const isLast = index === array.length - 1;
+                            
+                            console.log(`  ${v}: -${pourcentage}% = -${remise.toFixed(2)} ${currency} → ${prixActuel.toFixed(2)} ${currency}`);
+                            if (isLast) {
+								formule += `<span class="variation-reduction-percentage remise-title has-remise-revendeur">Remise ${v.toLowerCase()}</span>`
+							}else{
+								formule += `<span class="variation-reduction-percentage remise-title has-remise-revendeur">Remise ${v.toLowerCase()}</span><span class="price"><del aria-hidden="true">${prixActuel.toFixed(2)} ${currency}</del></span>`
+							}
+                        }
+                    });
+
+                    prixFinal = prixActuel;
+                    console.log(`💰 Prix final: ${prixFinal.toFixed(2)} ${currency}`);
+                    $(".formule-rc").html(formule);
+					$(".formule-rc").show();
+				}else{//client normal
+					let prixDepart = parseFloat($(".prix-total2").text().replace(',', '.'));
+                    let prixActuel = prixDepart;
+
+                    console.log(`Prix départ: ${prixActuel.toFixed(2)} ${currency}`);
+
+                    valuesToApply.forEach((v, index, array) => {
+                        const match = v.match(/-([0-9]+)%/);
+                        if (match) {
+                            const pourcentage = parseInt(match[1], 10);
+                            const remise = prixActuel * pourcentage / 100;
+                            prixActuel = prixActuel - remise;
+                            const isLast = index === array.length - 1;
+                            
+                            console.log(`  ${v}: -${pourcentage}% = -${remise.toFixed(2)} ${currency} → ${prixActuel.toFixed(2)} ${currency}`);
+                            if (isLast) {
+								formule += `<span class="variation-reduction-percentage remise-title has-remise-revendeur">Remise ${v.toLowerCase()}</span>`
+							}else{
+								formule += `<span class="variation-reduction-percentage remise-title has-remise-revendeur">Remise ${v.toLowerCase()}</span><span class="price"><del aria-hidden="true">${prixActuel.toFixed(2)} ${currency}</del></span>`
+							}
+                        }
+                    });
+
+                    prixFinal = prixActuel;
+                    console.log(`💰 Prix final: ${prixFinal.toFixed(2)} ${currency}`);
+                    $(".formule-rc").html(formule);
+					$(".formule-rc").show();
+				}
+                
+
+               
+                // Sécurité (pas négatif)
+                prixFinal = Math.max(0, prixFinal);
+                // Arrondi (à l’entier ou 2 décimales selon ton besoin)
+                prixFinal = (prixFinal.toFixed(2)); // ou toFixed(2)
+                // Affichage
+                $(".prix-remise").text(`${prixFinal} ${currency}`);
+                
+
+                $(".remisable bdi").css("text-decoration", "line-through");
+                $(".hide-if-rem-comm  .variation-reduction-percentage").hide();
+                $(".hide-if-rem-comm  .promo-end").hide();
+                $(".hide-if-rem-comm ins").hide();
+                $(".prix-remise").show();
+            }
+
+        }
+
+
+        $('.optionRemise').on('change', function() {
+            apply_reduction(this);
+		});
+        $('#pa_software_duration').on('change', function() {
+            setTimeout(() => {
+                apply_reduction(null);
+            }, 2000); 
+		});
+        $('#pa_number_of_computers').on('change', function() {
+		    setTimeout(() => {
+                apply_reduction(null);
+            }, 2000); 
+		});
+         setTimeout(() => {
+                apply_reduction(null);
+            }, 2000); 
+
+        
+
+        //  désactiver au départ !
+        $(".btn-remise").prop("disabled", true);
+
+        load_form()
+
+    });
+    </script>
+<?php 
+    }
+?>
+    <style>
+        .btn-remise:disabled {
+            background-color: #999 !important;
+            border-color: #777 !important;
+            cursor: not-allowed;
+            opacity: 0.5;
+            margin-block: 10px !important;
+        }
+        .prix-remise-depart,.prix-total,.prix-total2,.pourcentage-remise-depart{
+            display:none;
+        }
+        .prix-remise{
+            display:none;
+        }
+        .btn-remise-style {
+            font-family:'Raleway';
+            font-weight:700;
+            margin-top:17px;
+            border-style: solid; 
+            border-width: 3px 3px 3px 3px; 
+            border-radius: 8px 8px 8px 8px; 
+            padding: 12px 30px 12px 30px; 
+            color: #FFFFFF; 
+            background-color: var(--e-global-color-primary); 
+            border-color: var(--e-global-color-primary); 
+            transition: all 0.2s;
+            width: fit-content;
+            margin: auto; 
+            text-transform: unset;
+            margin-block: 10px !important;
+        }
+    </style>

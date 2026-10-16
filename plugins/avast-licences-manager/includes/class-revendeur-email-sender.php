@@ -1,0 +1,256 @@
+<?php
+
+
+class RevendeurEmailSender {
+
+    public static function create_account_and_send_email($post_id) {
+        $id = $post_id;
+        if (!$id) return;
+
+      
+
+        $new_revendeur_account_nom = get_field('account_nom', $post_id);
+        $new_revendeur_account_prenom = get_field('account_prenom', $post_id);
+        $new_revendeur_account_siret = get_field('account_siret', $post_id);
+        $new_revendeur_account_email = get_field('account_email', $post_id);
+        $new_revendeur_account_societe = get_field('account_societe', $post_id);
+        $new_revendeur_account_genre = get_field('account_genre', $post_id);
+        $new_revendeur_account_telephone = get_field('account_telephone', $post_id);
+        $new_revendeur_account_mot_de_passe = get_field('account_mot_de_passe', $post_id);
+        $new_revendeur_account_adresse = get_field('account_adresse', $post_id);
+        $new_revendeur_account_ville = get_field('account_ville', $post_id);
+        $new_revendeur_account_code_postal = get_field('account_code_postal', $post_id);
+        $new_revendeur_account_pays = get_field('account_pays', $post_id);
+        $new_revendeur_account_agree_cgr = get_field('account_agree_cgr', $post_id);
+        $new_revendeur_account_divulgation = get_field('account_divulgation', $post_id);
+        $new_revendeur_account_tva_intra = get_field('account_tva_intra', $post_id);
+        $new_revendeur_account_regime_tva = get_field('account_regime_tva', $post_id);
+        $new_revendeur_account_prefixe_tva = get_field('account_prefixe_tva', $post_id);
+
+        $civilite = ($new_revendeur_account_genre=="m")?"Monsieur":"Madame";
+
+         $new_revendeur_account_role = 'customer_revendeur';
+        //creer avec nom prenom password email et ajouter le role
+        $user_id = wp_insert_user([
+            'user_login'   => $new_revendeur_account_email,
+            'user_email'   => $new_revendeur_account_email,
+            'user_pass'    => $new_revendeur_account_mot_de_passe,
+            'first_name'   => $new_revendeur_account_prenom,
+            'last_name'    => $new_revendeur_account_nom,
+            'role'         => $new_revendeur_account_role,
+        ]);
+    
+        
+        update_user_meta($user_id, 'billing_first_name', $new_revendeur_account_prenom);
+        update_user_meta($user_id, 'billing_last_name', $new_revendeur_account_nom);
+        update_user_meta($user_id, 'billing_country', $new_revendeur_account_pays);
+        update_user_meta($user_id, 'billing_postcode', $new_revendeur_account_code_postal);
+        update_user_meta($user_id, 'billing_city', $new_revendeur_account_ville);
+
+        update_user_meta($user_id, 'ville', $new_revendeur_account_ville);
+        update_user_meta($user_id, 'denomination', $new_revendeur_account_societe);
+        update_user_meta($user_id, 'billing_type_client', 'revendeur');
+        update_user_meta($user_id, 'type_client', 'revendeur');
+        update_user_meta($user_id, 'billing_societe', $new_revendeur_account_societe);
+        update_user_meta($user_id, 'billing_numero_siret',  $new_revendeur_account_siret);
+        update_user_meta($user_id, 'account_siret', $new_revendeur_account_siret);
+        update_user_meta($user_id, 'code_postal', $new_revendeur_account_code_postal);
+        update_user_meta($user_id, 'pays', $new_revendeur_account_pays);
+        update_user_meta($user_id, 'civilite', $civilite);
+        update_user_meta($user_id, 'billing_address_1', $new_revendeur_account_adresse);
+        update_user_meta($user_id, 'billing_phone', $new_revendeur_account_telephone);
+        if( isset($new_revendeur_account_regime_tva)){
+            $regime=$new_revendeur_account_regime_tva;
+            if($regime==1){
+                update_user_meta( $user_id, 'new_revendeur_account_regime_tva', "HT_UE" );
+                update_user_meta($user_id, 'new_revendeur_account_prefixe_tva', sanitize_text_field($new_revendeur_account_prefixe_tva));
+                update_user_meta($user_id, 'new_revendeur_account_tva_intra', sanitize_text_field($new_revendeur_account_tva_intra));
+
+
+                //taxe
+                update_user_meta($user_id, 'tefw_exempt', 1);
+                update_user_meta($user_id, 'tefw_exempt_name', $new_revendeur_account_nom.' '.$new_revendeur_account_prenom);
+                update_user_meta($user_id, 'tefw_exempt_reason', 'Exonération automatique compte revendeur');
+                update_user_meta($user_id, 'tefw_exempt_status', 'approved');
+
+                // Send email notification to the admin
+                // 🔹 Email admin
+                $admin_email = 'ayrtongonsallo444@gmail.com';//get_option('admin_email');
+
+                $subject = 'Nouvelle demande d\'exonération de taxe';
+
+                $message = "
+                Un nouveau compte revendeur a été créé. Il a automatiquement généré une demande d'exonération de TVA.
+
+                Nom : {$new_revendeur_account_nom}
+                Prénom : {$new_revendeur_account_prenom}
+                Email : {$new_revendeur_account_email}
+                ID utilisateur : {$user_id}
+                Pays : {$new_revendeur_account_pays}
+                Prefixe tva : {$new_revendeur_account_prefixe_tva}
+                N° TVA intracommunautaire : {$new_revendeur_account_tva_intra}
+
+                Connectez-vous au back office du site et rendez-vous dans 'Tax Exepmtion > Exempt customers' pour changer le statut de cette demande.
+                
+                ";
+
+                wp_mail($admin_email, $subject, $message);
+            }
+            else if ($regime==3){
+                update_user_meta( $user_id, 'new_revendeur_account_regime_tva', "HT" );
+
+                //taxe
+                update_user_meta($user_id, 'tefw_exempt', 1);
+                 update_user_meta($user_id, 'tefw_exempt_name', $new_revendeur_account_nom.' '.$new_revendeur_account_prenom);
+                update_user_meta($user_id, 'tefw_exempt_reason', 'Exonération automatique compte "Professionnel, Association ou Institution" pour un pays hors UE');
+                update_user_meta($user_id, 'tefw_exempt_status', 'approved');
+
+                // Send email notification to the admin
+                // 🔹 Email admin
+                $admin_email = 'ayrtongonsallo444@gmail.com';//get_option('admin_email');
+
+                $subject = 'Nouvelle demande d\'exonération de taxe pour un pays hors UE';
+
+                $message = "
+                Un nouveau compte professionnel, association ou institution a été créé. Il a automatiquement généré une demande d'exonération de TVA.
+
+                Nom : {$new_revendeur_account_nom}
+                Prénom : {$new_revendeur_account_prenom}
+                Email : {$new_revendeur_account_email}
+                ID utilisateur : {$user_id}
+                Pays : {$new_revendeur_account_pays}
+
+                Connectez-vous au back office du site et rendez-vous dans 'Tax Exepmtion > Exempt customers' pour changer le statut de cette demande.
+                
+                ";
+
+                wp_mail($admin_email, $subject, $message);
+
+            }
+            else{
+                update_user_meta( $user_id, 'new_revendeur_account_regime_tva', "TVA" );
+
+            }
+
+        }
+
+        // 1️⃣ Créer la remise CPT
+        $remise_id = wp_insert_post([
+            'post_type'   => 'remise',
+            'post_title'  => "Demande de remise : revendeur - Utilisateur $user_id",
+            'post_status' => 'publish',
+            'post_author' => $user_id,
+        ]);
+
+       
+
+        // 2️⃣ Champs ACF
+        update_field('utilisateur', $user_id, $remise_id);
+        update_field('compte', [$user_id], $remise_id);
+        update_field('statut', 'validee', $remise_id);
+        update_field('type', 'revendeur - 25 %', $remise_id);
+        update_field('pourcentage', 25, $remise_id);
+        update_field('date_de_creation', current_time('d/m/Y g:i a'), $remise_id);
+        $expiration = date('Y-m-d H:i:s', strtotime('+1 year'));
+        update_field('date_dexpiration', $expiration, $remise_id);
+
+
+        $lien_auto_connect_compte = site_url('/mon-compte/');
+        $lien_blog = site_url('/blog/');
+        $lien_logo_png = site_url().'/wp-content/uploads/2025/11/avast-logo.png';
+
+        // 2️⃣ Construire le contenu de l'email
+        $subject = "Ouverture de votre compte revendeur AVAST";
+       $message = '
+            <div style="
+                width:100%;
+                font-family:Arial, sans-serif;
+            ">
+                
+
+                <div class="content1" style="
+                    max-width:600px;
+                    margin:0 auto;
+                    background:white;
+                    padding:0px 30px 30px 30px;
+                    border-radius:8px;
+                    text-align:start;
+                    box-shadow:0 0 10px rgba(0,0,0,0.08);
+                ">            
+
+                  <h4 style="
+                            margin:20px 0;
+                            color:#FF7800;
+                            font-weight:bolder;
+                            text-align:center;
+                            font-size:18px;
+                        ">Votre compte revendeur AVAST est ouvert</h4>
+                
+                    
+                        Bonjour '.$civilite.' '.$new_revendeur_account_nom.' '.$new_revendeur_account_prenom.',
+                    
+
+                    <p style="font-size:15px; color:#555; line-height:1.6;">
+                        Félicitations votre compte revendeur avast a été validé par nos services.<br>
+                        Il est maintenant opérationnel.<br>
+                        Vous pouvez vous connecter à votre compte revendeur ici à l\'aide de l\'adresse email et du mot de passe que vous avez saisi lorsque vous avez rempli le formulaire d\'adhésion :
+                    </p>
+
+                    <div class="content-center" style="text-align:center;">
+                        <a href="'.$lien_auto_connect_compte.'" target="_blank" style="
+                            display:inline-block;
+                            margin:20px 0;
+                            padding:12px 25px;
+                            background:#FF7800;
+                            font-weight:bolder;
+                            color:black;
+                            text-decoration:none;
+                            font-size:16px;
+                            border-radius:6px;
+                        ">Accéder à mon compte revendeur avast</a>
+                    </div>
+
+                    <p style="margin-top:10px; color:#444; font-weight:bolder;">Votre compte revendeur avast vous permet de bénéficier des avantages suivants :</p>
+                    
+                     <p style="font-size:15px; color:#555; line-height:1.6; margin-top:20px;">       
+                    - une marge revendeur garantie quelque soit le volume d\'affaires que vous faites avec nous.<br>
+                    - un compte revendeur fonctionnel qui vous permet d\'etre le plus autonome possible dans vos demandes de devis, demandes de support technique, la gestion de vos commandes, etc...<br>
+                    - un espace marketing dédié aux revendeurs avast ou vous pourrez télécharger des affiches, lire nos recommandations pour trouver de nouveaux clients, vous tenir informé des nouveautés avast via notre blog '.$lien_blog.'<br>
+                    - des promotions sous forme de rabais ou de cadeaux.<br>
+                    - un contact dédié (moi-même) qui centralise vos demandes (commerciales et techniques) et s\'assure de votre satisfaction.<br>
+                    </p>
+                    <p style="font-size:15px; color:#555; line-height:1.6; margin-top:20px;">
+                        Je reste à votre disposition pour toute question.
+                    </p>
+
+                    <p style="margin-top:30px; color:#333;">
+                        Bien cordialement,<br>Maelle Adeire<br>Distribution AVAST<br>contact@avastedition.com<br>02 55 99 31 37
+                    </p>
+
+                </div>
+
+            </div>
+            ';
+
+
+
+        // 3️⃣ Préparer les headers 
+        $headers = array(
+            'Content-Type: text/html; charset=UTF-8'
+        );
+        
+
+
+        // 4️⃣ Envoyer avec wp_mail et pièce jointe
+        $sent = wp_mail(
+            $new_revendeur_account_email,
+            $subject,
+            $message,
+            $headers
+        );
+        return $sent;
+        
+    }
+
+
+}

@@ -1,0 +1,37 @@
+Avast Licences Manager - Plugin skeleton
+=======================================
+
+Ce ZIP contient une structure minimale du plugin "avast-licences-manager" :
+- avast-licences-manager.php  (fichier principal)
+- includes/class-roles.php     (gestion des rôles : customer_direct, customer_revendeur)
+- assets/                      (dossier pour JS/CSS futurs)
+
+INSTALLATION
+1) Téléversez le dossier 'avast-licences-manager' dans wp-content/plugins/
+2) Activez le plugin depuis l'administration WordPress > Extensions
+3) A l'activation, les rôles 'Client Particulier' et 'Client Revendeur' seront créés.
+
+PROCHAINES ETAPES
+- Ajouter les champs d'inscription et mapping user_meta
+- Ajouter onglets "Mon compte" personnalisés
+- Ajouter gestion devis / licences / cron / reporting
+
+Note: Procédé minimal pour débuter le développement. Ne pas modifier functions.php ; tout le code métier doit être ajouté dans ce plugin.
+
+
+lien pour fonctions woocommerce 
+https://woocommerce.github.io/code-reference/classes/WC-Order.html#method_get_payment_method
+
+https://worldpressit.com/ 
+Worldpressit.com:
+mylene.audebert@gmail.com
+dnz%ZO3M&wDtrC6Q
+
+
+expiratuon devis 
+test.antivirusedition.com/?send_devis_expiring=1&key=ma_clef_ultra_secrete_123
+https://test.antivirusedition.com/wp-json/alm/v1/subscriptions?subs_id=32772
+https://test.antivirusedition.com/wp-json/alm/v1/subscriptions?test=1&subs_id=32772
+
+https://test.antivirusedition.com/wp-json/alm/v1/cron_subscriptions
+https://test.antivirusedition.com/wp-json/alm/v1/cron_subscriptions?sauvegarder=1
