@@ -12,8 +12,9 @@
  *
  * @see     https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Templates
- * @version 10.1.0
+ * @version 11.2.0
  */
+
 
 defined( 'ABSPATH' ) || exit;
 
@@ -123,40 +124,85 @@ if(isset($_POST['alm_client_global'])){
 						</td>
 
 						<td scope="row" role="rowheader" class="product-name" data-title="<?php esc_attr_e( 'Product', 'woocommerce' ); ?>">
-						<?php
-						if ( ! $product_permalink ) {
-							echo wp_kses_post( $product_name . '&nbsp;' );
-						} else {
-							/**
-							 * This filter is documented above.
-							 *
-							 * @since 2.1.0
-							 */
-							echo wp_kses_post( apply_filters( 'woocommerce_cart_item_name', sprintf( '<a href="%s">%s</a>', esc_url( $product_permalink ), $_product->get_name() ), $cart_item, $cart_item_key ) );
-						}
-
-						do_action( 'woocommerce_after_cart_item_name', $cart_item, $cart_item_key );
-
-						// Meta data.
-						//echo wc_get_formatted_cart_item_data( $cart_item ); // PHPCS: XSS ok.
-
-						// Backorder notification.
-						if ( $_product->backorders_require_notification() && $_product->is_on_backorder( $cart_item['quantity'] ) ) {
-							echo wp_kses_post( apply_filters( 'woocommerce_cart_item_backorder_notification', '<p class="backorder_notification">' . esc_html__( 'Available on backorder', 'woocommerce' ) . '</p>', $product_id ) );
-						}
-						?>
-						<?php 
-								$price_regular = $_product->get_regular_price();
-								$price_sale    = $_product->get_sale_price();
-								$is_promo = $price_sale && $price_sale < $price_regular;
-								if ($is_promo && !$has_remise) {
-									$pourcentage = round(100 - ($price_sale / $price_regular * 100));
-									echo '<br><span style="color:green;font-weight:bold;">Promo -'.$pourcentage.' %</span>';
+							<!--
+							<div class="mobile">
+								<?php
+								/*
+									if ( ! $product_permalink ) {
+										echo $thumbnail; // PHPCS: XSS ok.
+									} else {
+										printf( '<a href="%s">%s</a>', esc_url( $product_permalink ), $thumbnail ); // PHPCS: XSS ok.
+									}
+										*/
+								?>
+							</div>
+							<div class="desktop">
+								<?php
+								/*
+								if ( ! $product_permalink ) {
+									echo wp_kses_post( $product_name . '&nbsp;' );
+								} else {
+									
+									echo wp_kses_post( apply_filters( 'woocommerce_cart_item_name', sprintf( '<a href="%s">%s</a>', esc_url( $product_permalink ), $_product->get_name() ), $cart_item, $cart_item_key ) );
 								}
+
+								do_action( 'woocommerce_after_cart_item_name', $cart_item, $cart_item_key );
+
+								// Meta data.
+								//echo wc_get_formatted_cart_item_data( $cart_item ); // PHPCS: XSS ok.
+
+								// Backorder notification.
+								if ( $_product->backorders_require_notification() && $_product->is_on_backorder( $cart_item['quantity'] ) ) {
+									echo wp_kses_post( apply_filters( 'woocommerce_cart_item_backorder_notification', '<p class="backorder_notification">' . esc_html__( 'Available on backorder', 'woocommerce' ) . '</p>', $product_id ) );
+								}
+								?>
+								<?php 
+									$price_regular = $_product->get_regular_price();
+									$price_sale    = $_product->get_sale_price();
+									$is_promo = $price_sale && $price_sale < $price_regular;
+									if ($is_promo && !$has_remise) {
+										$pourcentage = round(100 - ($price_sale / $price_regular * 100));
+										echo '<br><span style="color:green;font-weight:bold;">Promo -'.$pourcentage.' %</span>';
+									} */
+								?>
+							</div>
+							-->
+
+
+							<?php
+								if ( ! $product_permalink ) {
+									echo wp_kses_post( $product_name . '&nbsp;' );
+								} else {
+									/**
+									 * This filter is documented above.
+									 *
+									 * @since 2.1.0
+									 */
+									echo wp_kses_post( apply_filters( 'woocommerce_cart_item_name', sprintf( '<a href="%s">%s</a>', esc_url( $product_permalink ), $_product->get_name() ), $cart_item, $cart_item_key ) );
+								}
+
+								do_action( 'woocommerce_after_cart_item_name', $cart_item, $cart_item_key );
+
+								// Meta data.
+								//echo wc_get_formatted_cart_item_data( $cart_item ); // PHPCS: XSS ok.
+
+								// Backorder notification.
+								if ( $_product->backorders_require_notification() && $_product->is_on_backorder( $cart_item['quantity'] ) ) {
+									echo wp_kses_post( apply_filters( 'woocommerce_cart_item_backorder_notification', '<p class="backorder_notification">' . esc_html__( 'Available on backorder', 'woocommerce' ) . '</p>', $product_id ) );
+								}
+								?>
+								<?php 
+									$price_regular = $_product->get_regular_price();
+									$price_sale    = $_product->get_sale_price();
+									$is_promo = $price_sale && $price_sale < $price_regular;
+									if ($is_promo && !$has_remise) {
+										$pourcentage = round(100 - ($price_sale / $price_regular * 100));
+										echo '<br><span style="color:green;font-weight:bold;">Promo -'.$pourcentage.' %</span>';
+									}
 								?>
 						</td>
 
-						<td class="product-software_duration product-name" data-title="software_duration">
+						<td class="product-software_duration product-name" data-title="durée">
     
 							
 							<?php 
@@ -210,7 +256,7 @@ if(isset($_POST['alm_client_global'])){
 
 						</td>
 
-						<td class="product-number_of_computers product-name" data-title="number_of_computers">
+						<td class="product-number_of_computers product-name" data-title="pc">
     
 							
 							<?php 
@@ -404,10 +450,10 @@ if(isset($_POST['alm_client_global'])){
 	?>
 
 	<form method="post" class="form-client-final-cart">
-		<label>Client final de la commande</label>
+		<!--<label>Client final de la commande</label>-->
 		
 
-		<select name="alm_client_global" required class="automatic-sent2">
+		<select name="alm_client_global" required class="automatic-sent2 select-client-final-card" >
 			<option value="">Sélectionnez un client</option>
 
 			<?php foreach ($all_clients as $c) : 

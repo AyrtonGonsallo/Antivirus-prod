@@ -419,7 +419,7 @@ do_action( 'woocommerce_before_customer_login_form' ); ?>
 		}
 
 		//setupRecaptcha('.woocommerce-form-login', '#recaptcha_token1');
-		setupRecaptcha('.woocommerce-form-register', '#recaptcha_token2');
+		//setupRecaptcha('.woocommerce-form-register', '#recaptcha_token2');
 
 
 

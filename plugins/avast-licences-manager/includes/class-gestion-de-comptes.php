@@ -39,7 +39,7 @@ class ALM_Gestion_De_Comptes {
         add_filter('woocommerce_account_menu_items', [$this, 'add_devis_menu_link']);
         add_action('woocommerce_account_mes-devis_endpoint', [$this, 'render_devis_page']);
 
-         add_filter( 'woocommerce_registration_errors', [$this, 'wc_validate_registration_recaptcha'], 10, 3 );
+       //  add_filter( 'woocommerce_registration_errors', [$this, 'wc_validate_registration_recaptcha'], 10, 3 );
 
         
 
@@ -70,6 +70,25 @@ class ALM_Gestion_De_Comptes {
         add_action('admin_notices', [$this, 'afficher_lien_auto_connexion_admin']);
 
         //add_filter('woocommerce_registration_redirect', [$this, 'redirect_after_register']);
+
+
+        // 1. Modifier le destinataire de la notification de création d'un nouveau compte
+        add_filter( 'wp_new_user_notification_email', 'custom_change_admin_notification_recipient', 10, 3 );
+        function custom_change_admin_notification_recipient( $wp_new_user_notification_email, $user, $blogname ) {
+            // Remplacez par l'adresse e-mail qui doit recevoir l'alerte
+            $wp_new_user_notification_email['to'] = 'ayrtongonsallo444@gmail.com';
+            
+            return $wp_new_user_notification_email;
+        }
+
+        // 2. Modifier le destinataire de la notification de changement de mot de passe (côté admin)
+        add_filter( 'wp_password_change_notification_email', 'custom_change_password_notification_recipient', 10, 3 );
+        function custom_change_password_notification_recipient( $wp_password_change_notification_email, $user, $blogname ) {
+            // Remplacez par l'adresse e-mail qui doit recevoir l'alerte
+            $wp_password_change_notification_email['to'] = 'ayrtongonsallo444@gmail.com';
+            
+            return $wp_password_change_notification_email;
+        }
 
         
 

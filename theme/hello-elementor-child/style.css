@@ -1492,7 +1492,7 @@ div.woocommerce-variation-price.remisable.has-remise-revendeur bdi, span.remisab
 .faq-item a {
     text-decoration: none !important;
 }
-.elementor-menu-cart__product-name .variation-Software_duration, .elementor-menu-cart__product-name .variation-Dure, .subscription-details{
+.elementor-menu-cart__product-name .variation-Software_duration,.variation-Number_of_computers, .elementor-menu-cart__product-name .variation-Dure, .subscription-details{
     display: none !important;
 }
 .woocommerce-form.woocommerce-form-register{
@@ -1580,4 +1580,45 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 .googlesitekit-sign-in-with-google__frontend-output-button{
     display: none !important ;
+}
+.select-client-final-card{
+    border: solid 1px black !important; 
+    background: white !important; 
+}
+
+@media only screen and (min-width:600px){
+    .mobile{
+        display: none;
+    }
+    .desktop{
+        display: block;
+    }
+    .select-client-final-card{
+        width:400px;
+    }
+	
+}
+@media only screen and (max-width:600px){
+    .mobile{
+        display: block;
+    }
+    .desktop{
+        display: none;
+    }
+    .product-name{
+        display: flex !important;
+        justify-content: space-between !important;
+    }
+    .select-client-final-card{
+        width:90%;
+    }
+    .woocommerce-checkout-review-order-table .product-name{
+        flex-direction: column !important;
+    }
+    #billing_type_client_field .woocommerce-input-wrapper{
+        flex-wrap: wrap;
+    }
+    
+	
+	
 }
