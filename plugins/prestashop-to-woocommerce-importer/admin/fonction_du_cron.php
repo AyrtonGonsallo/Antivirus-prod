@@ -58,10 +58,16 @@ function job_du_cron() {
     
 
     $users = get_users([
-        'orderby' => 'login',
-        'order'   => 'DESC',
-        'number'  => $limit,
-        'offset'  => $offset,
+        'orderby'  => 'login',
+        'order'    => 'DESC',
+        'number'   => $limit,
+        'offset'   => $offset,
+        'meta_query' => [
+            [
+                'key'     => 'revendeur_id', // exclut les clients de revendeurs (ids communs CDR / client-rev)
+                'compare' => 'NOT EXISTS',
+            ],
+        ],
     ]);
 
     
