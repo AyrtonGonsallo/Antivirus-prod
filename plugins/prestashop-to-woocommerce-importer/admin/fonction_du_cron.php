@@ -107,8 +107,8 @@ function job_du_cron() {
         
 
         $sent = avast_send_welcome_email(
-            //$user->user_email,
-            "ayrtongonsalloheroku@gmail.com",
+            $user->user_email,
+            //"ayrtongonsalloheroku@gmail.com",
             $pays
         );
 

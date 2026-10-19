@@ -73,12 +73,12 @@ class ALM_Gestion_De_Comptes {
 
 
         // 1. Modifier le destinataire de la notification de création d'un nouveau compte
-        add_filter( 'wp_new_user_notification_email', 'custom_change_admin_notification_recipient', 10, 3 );
-        function custom_change_admin_notification_recipient( $wp_new_user_notification_email, $user, $blogname ) {
+        add_filter( 'wp_new_user_notification_email_admin', 'custom_change_admin_notification_recipient', 10, 3 );
+        function custom_change_admin_notification_recipient( $wp_new_user_notification_email_admin, $user, $blogname ) {
             // Remplacez par l'adresse e-mail qui doit recevoir l'alerte
-            $wp_new_user_notification_email['to'] = 'ayrtongonsallo444@gmail.com';
+            $wp_new_user_notification_email_admin['to'] = 'ayrtongonsallo444@gmail.com';
             
-            return $wp_new_user_notification_email;
+            return $wp_new_user_notification_email_admin;
         }
 
         // 2. Modifier le destinataire de la notification de changement de mot de passe (côté admin)
