@@ -584,12 +584,6 @@ function get_revendeur_remise($user_id) {
                 'key'   => 'type',
                 'value' => 'revendeur - 25 %',
             ],
-            [
-                'key'     => 'date_dexpiration',
-                'value'   => $today,
-                'compare' => '>=',
-                'type'    => 'DATETIME',
-            ],
         ],
     ];
 
@@ -738,6 +732,8 @@ add_filter('woocommerce_available_variation', function ($variation_data, $produc
 
     // ✅ Guard : ne pas chercher de remise si pas connecté
     $remise = $is_logged_in ? get_revendeur_remise($user_id) : null;
+
+    error_log('user '.$user_id.' remise '.$remise->ID);
 
     if (!empty($remise) && !$bloquer_remise_revendeur) {
 

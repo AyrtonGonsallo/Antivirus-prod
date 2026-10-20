@@ -62,13 +62,10 @@ function job_du_cron() {
         'order'    => 'DESC',
         'number'   => $limit,
         'offset'   => $offset,
-        'meta_query' => [
-            [
-                'key'     => 'revendeur_id', // exclut les clients de revendeurs (ids communs CDR / client-rev)
-                'compare' => 'NOT EXISTS',
-            ],
-        ],
+       
     ]);
+
+    //le dernier envoye etait a nicu.colroser@gmail.com donc strictement apres lui par login decroissant
 
     
 
@@ -103,6 +100,21 @@ function job_du_cron() {
  
 
     foreach ($users as $user) {
+
+        // 1. Vérifier le rôle
+        if (!in_array('customer_direct', (array) $user->roles, true)) {
+            error_log("Utilisateur {$user->ID} ignoré : rôle incorrect.");
+            continue;
+        }
+
+        // 2. Vérifier l'absence de la méta revendeur_id
+        $revendeur_id = get_user_meta($user->ID, 'revendeur_id', true);
+        if (!empty($revendeur_id)) {
+            error_log("Utilisateur {$user->ID} ignoré : revendeur_id présent ({$revendeur_id}).");
+            continue;
+        }
+
+        
         if (empty($user->user_email) || !is_email($user->user_email)) {
             continue;
         }
