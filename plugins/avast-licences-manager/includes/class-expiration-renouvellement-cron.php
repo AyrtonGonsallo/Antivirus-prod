@@ -79,7 +79,7 @@ class ALM_Expiration_renewal_cron {
 
             $dateCommande = new DateTime($date);
             $dateExpiration = clone $dateCommande;
-            $dateExpiration->modify('+15 days');
+            $dateExpiration->modify('+90 days');
             $dateExpirationString = $dateExpiration->format('Y-m-d H:i:s');
 
             $maintenant = new DateTime();

@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function insertImageBeforeHome() {
     // Sélectionne le lien "Accueil" (ou le premier lien du fil d’Ariane)
-    let homeLink = document.querySelector('#breadcrumbs a[href="https://test.antivirusedition.com/"]')
+    let homeLink = document.querySelector('#breadcrumbs a[href="https://www.antivirusedition.com/"]')
                 || document.querySelector('#breadcrumbs a[href="/"]')
                 || document.querySelector('#breadcrumbs a');
 
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* ---- 2) Ajouter image avant "Accueil" ---- */
     let homeLink =
-      breadcrumb.querySelector('a[href="https://test.antivirusedition.com"]') ||
+      breadcrumb.querySelector('a[href="https://www.antivirusedition.com"]') ||
       breadcrumb.querySelector('a[href="/"]') ||
       breadcrumb.querySelector('a');
 
@@ -201,7 +201,7 @@ jQuery(document).ready(function($) {
 	
 	
   function activateEntreprisesTab() {
-    const $tab = $('#e-n-tab-title-1985465122');
+    const $tab = $('#e-n-tab-title-8950413672');
     if ($tab.length && $tab.attr('aria-selected') !== 'true') {
       $tab.trigger('click');
       console.log('✅ Onglet "Entreprises" activé');
@@ -209,7 +209,7 @@ jQuery(document).ready(function($) {
     
     $("#mega-menu-item-3513").removeClass("mega-current-menu-item");//desactiver particulier
     $("#mega-menu-item-1867").addClass("mega-current-menu-item");//activer entreprise
-    $(".elementor-element.elementor-element-836bccd").css("background", "#002f40");
+    $(".elementor-element.elementor-element-7d73e313").css("background", "#002f40");
   }
 	
 	// Vérifie si l'URL contient #entreprises
@@ -222,7 +222,7 @@ jQuery(document).ready(function($) {
 
     // Réessaie si Elementor charge dynamiquement (observer DOM)
     const observer = new MutationObserver(() => {
-      const $tab = $('#e-n-tab-title-1985465122');
+      const $tab = $('#e-n-tab-title-8950413672');
       if ($tab.length && $tab.attr('aria-selected') !== 'true') {
         $tab.trigger('click');
         console.log('✅ Onglet "Entreprises" activé après chargement');
@@ -249,7 +249,7 @@ jQuery(document).ready(function($) {
       }
       $("#mega-menu-item-1867").removeClass("mega-current-menu-item");//desactiver entreprise
       $("#mega-menu-item-3513").addClass("mega-current-menu-item");//activer particulier
-      $(".elementor-element.elementor-element-836bccd").css("background", "#ffffff");
+      $(".elementor-element.elementor-element-7d73e313").css("background", "#ffffff");
     }
 
     // Essaie immédiatement
@@ -279,18 +279,18 @@ jQuery(document).ready(function($) {
   // Fonction pour le clic "Particuliers"
   $("#pariculiers").on("click", function() {
     console.log("Onglet Particuliers cliqué");
-    $(".elementor-element.elementor-element-836bccd ")
+    $(".elementor-element.elementor-element-7d73e313")
         .css("background", "#ffffffff");
 	  $("#mega-menu-item-1867").removeClass("mega-current-menu-item");//desactiver entreprise
 	  $("#mega-menu-item-3513").addClass("mega-current-menu-item");//activer particulier
 	  //setTimeout(activateParticulierTab, 500);
   });
 
-  $("#e-n-tab-title-1985465122").on("click", function() {
+  $("#e-n-tab-title-8950413672").on("click", function() {
     console.log("Onglet Entreprise cliqué");
     $("#mega-menu-item-3513").removeClass("mega-current-menu-item");//desactiver particulier
 	  $("#mega-menu-item-1867").addClass("mega-current-menu-item");//activer entreprise
-    $(".elementor-element.elementor-element-836bccd").css("background", "#002f40");
+    $(".elementor-element.elementor-element-7d73e313").css("background", "#002f40");
 	  //setTimeout(activateParticulierTab, 500);
   });
 

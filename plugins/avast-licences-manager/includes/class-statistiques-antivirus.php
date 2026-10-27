@@ -320,7 +320,22 @@ class ALM_Statistiques_antivirus {
                 $status = wc_get_order_status_name($order->get_status());
                 //$order->get_payment_method_title().' - '.$order->get_payment_method()
                 //Carte de crédit/débit - stripe,Virement bancaire - bacs,	Paiements par chèque - cheque,Paiement par mandat administratif - paiement_mandat_administratif,Paiement en fin de mois - paiement_differe
-                $methode = $order->get_payment_method_title();
+                $methode = '';
+                $is_reboursement=false;
+                $text_remb = "";
+
+                if ($order instanceof WC_Order && ! $order instanceof WC_Order_Refund) {
+                    $methode = $order->get_payment_method_title();
+                }else{
+                    if ($order instanceof WC_Order_Refund) {
+                        $text_remb = "Remboursement ".$order_id." de la commande ".$order->get_parent_id();
+                        $is_reboursement=true;
+                        error_log('is_reboursement : '.$is_reboursement);
+                        error_log($text_remb);
+                    } 
+                }
+
+                
                 
                 $custom_statut = $this->get_custom_statut($status,$methode,$is_renewal);
                 $cles = '';
@@ -393,7 +408,13 @@ class ALM_Statistiques_antivirus {
 
                 echo '<tr>';
                 echo '<td><input type="checkbox" class="rowCheck"></td>';
-                echo '<td><span style="display:none" class="order_id">'.$order_id.'</span> <a href="' . esc_url($order_link) . '" target="_blank">#'. esc_html($order_id) . '</a><br>'.$text.' '.$text_presta.'</td>';
+                if($is_reboursement){
+                    echo '<td><span style="display:none" class="order_id">'.$order_id.'</span>#'. esc_html($order_id) . '<br>'.$text_remb.'</td>';
+
+                }else{
+                    echo '<td><span style="display:none" class="order_id">'.$order_id.'</span> <a href="' . esc_url($order_link) . '" target="_blank">#'. esc_html($order_id) . '</a><br>'.$text.' '.$text_presta.'</td>';
+
+                }
                 echo '<td>' . ($custom_statut) .'</td>';
                 echo '<td>' . ($methode) . '</td>';
                 echo '<td  data-order="'.esc_attr($order_date).'">' . esc_html($order->get_date_created()->date('d/m/Y H:i')) . '</td>';

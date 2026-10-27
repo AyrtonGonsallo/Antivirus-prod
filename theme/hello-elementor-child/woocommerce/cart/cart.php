@@ -27,6 +27,12 @@ if(isset($_POST['alm_client_global'])){
 }
 */
 
+$commande_de_devis=false;
+if (WC()->session && WC()->session->get('from_devis')){
+	$commande_de_devis=true;
+}
+	
+
 ?>
 
 <form class="woocommerce-cart-form" action="<?php echo esc_url( wc_get_cart_url() ); ?>" method="post">
@@ -227,19 +233,20 @@ if(isset($_POST['alm_client_global'])){
 										$options = $attr->get_options(); // liste de term IDs
 										$selected = $current_attr['pa_software_duration'] ?? '';
 										
-										echo '<select name="alm_Software_duration[' . $cart_item_key . ']" class="automatic-sent">';
+										echo '<select name="alm_Software_duration[' . esc_attr($cart_item_key) . ']" class="automatic-sent" '
+											. ($commande_de_devis ? 'disabled' : '') . '>';
+	
+											foreach ($options as $term_id) {
 
-										foreach ($options as $term_id) {
+												$term = get_term($term_id);
+												$value = $term->slug;
+												$label = $term->name;
 
-											$term = get_term($term_id);
-											$value = $term->slug;
-											$label = $term->name;
-
-											echo '<option value="' . esc_attr($value) . '" '
-													. selected($selected, $value, false) . '>'
-													. esc_html($label)
-												. '</option>';
-										}
+												echo '<option value="' . esc_attr($value) . '" '
+														. selected($selected, $value, false) . '>'
+														. esc_html($label)
+													. '</option>';
+											}
 
 										echo '</select>';
 									}
@@ -281,19 +288,20 @@ if(isset($_POST['alm_client_global'])){
 										$options = $attr->get_options();
 										$selected = $current_attr['pa_number_of_computers'] ?? '';
 										//var_dump($options);
-										echo '<select name="alm_Number_of_computers[' . $cart_item_key . ']" class="automatic-sent">';
+								
 
-										foreach ($options as $term_id) {
+										echo '<select name="alm_Number_of_computers[' . esc_attr($cart_item_key) . ']" class="automatic-sent" '. ($commande_de_devis ? 'disabled' : '') . '>';
+											foreach ($options as $term_id) {
 
-											$term = get_term($term_id);
-											$value = $term->slug;
-											$label = $term->name;
+												$term = get_term($term_id);
+												$value = $term->slug;
+												$label = $term->name;
 
-											echo '<option value="' . esc_attr($value) . '" '
-													. selected($selected, $value, false) . '>'
-													. esc_html($label)
-												. '</option>';
-										}
+												echo '<option value="' . esc_attr($value) . '" '
+														. selected($selected, $value, false) . '>'
+														. esc_html($label)
+													. '</option>';
+											}
 
 										echo '</select>';
 									}
@@ -326,29 +334,40 @@ if(isset($_POST['alm_client_global'])){
 						</td>
 
 						<td class="product-quantity" data-title="<?php esc_attr_e( 'Quantity', 'woocommerce' ); ?>">
-						<?php
-						if ( $_product->is_sold_individually() ) {
-							$min_quantity = 1;
-							$max_quantity = 1;
-						} else {
-							$min_quantity = 0;
-							$max_quantity = $_product->get_max_purchase_quantity();
-						}
+						
+							<?php
+							if ($commande_de_devis) {
+								echo '<span class="quantity">' . esc_html($cart_item['quantity']) . '</span>';
+							} else {
 
-						$product_quantity = woocommerce_quantity_input(
-							array(
-								'input_name'   => "cart[{$cart_item_key}][qty]",
-								'input_value'  => $cart_item['quantity'],
-								'max_value'    => $max_quantity,
-								'min_value'    => $min_quantity,
-								'product_name' => $product_name,
-							),
-							$_product,
-							false
-						);
+								if ($_product->is_sold_individually()) {
+									$min_quantity = 1;
+									$max_quantity = 1;
+								} else {
+									$min_quantity = 0;
+									$max_quantity = $_product->get_max_purchase_quantity();
+								}
 
-						echo apply_filters( 'woocommerce_cart_item_quantity', $product_quantity, $cart_item_key, $cart_item ); // PHPCS: XSS ok.
-						?>
+								$product_quantity = woocommerce_quantity_input(
+									array(
+										'input_name'   => "cart[{$cart_item_key}][qty]",
+										'input_value'  => $cart_item['quantity'],
+										'max_value'    => $max_quantity,
+										'min_value'    => $min_quantity,
+										'product_name' => $product_name,
+									),
+									$_product,
+									false
+								);
+
+								echo apply_filters(
+									'woocommerce_cart_item_quantity',
+									$product_quantity,
+									$cart_item_key,
+									$cart_item
+								); // PHPCS: XSS ok.
+							}
+							?>
 						</td>
 
 						<td class="product-subtotal" data-title="<?php esc_attr_e( 'Subtotal', 'woocommerce' ); ?>">
